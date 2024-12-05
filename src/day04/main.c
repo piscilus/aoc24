@@ -1,5 +1,5 @@
 /*
- * Main program for advent of code 2024 day 4c.
+ * Main program for advent of code 2024 day 4.
  *
  * (C) Copyright 2024 "piscilus" Julian Kraemer
  *
@@ -16,114 +16,76 @@
 #include <string.h>
 
 static int
-count_horizontal(grid2d_t* g, const char* p)
+count_xmas(grid2d_t* g, const char* p)
 {
     int c = 0;
     size_t p_size = strlen(p);
 
     for (size_t y = 0U; y < g->max_y; y++)
     {
-        for (size_t x = 0U; x < g->max_x - p_size + 1; x++)
+        for (size_t x = 0U; x < g->max_x; x++)
         {
-            size_t cfwd = 0U;
-            size_t cbwd = 0U;
+            size_t count[8] = {0};
             for (size_t i = 0U; i < p_size; i++)
             {
-                if (g->grid[y][x + i] == p[p_size - i - 1U])
-                    cfwd++;
-                if (g->grid[y][x + i] == p[i])
-                    cbwd++;
+                if (x < g->max_x - p_size + 1U)
+                {
+                    if (g->grid[y][x + i] == p[p_size - i - 1U])
+                        count[0]++;
+                    if (g->grid[y][x + i] == p[i])
+                        count[1]++;
+                }
+                if (y < g->max_y - p_size + 1U)
+                {
+                    if (g->grid[y + i][x] == p[p_size - i - 1U])
+                        count[2]++;
+                    if (g->grid[y + i][x] == p[i])
+                        count[3]++;
+                }
+                if ((x < g->max_x - p_size + 1U) && (y < g->max_y - p_size + 1U))
+                {
+                    if (g->grid[y + i][x + i] == p[p_size - i - 1U])
+                        count[4]++;
+                    if (g->grid[y + i][x + i] == p[i])
+                        count[5]++;
+                }
+                if ((x >= p_size - 1U) && (y < g->max_y - p_size + 1U))
+                {
+                    if (g->grid[y + i][x - i] == p[p_size - i - 1U])
+                        count[6]++;
+                    if (g->grid[y + i][x - i] == p[i])
+                        count[7]++;
+                }
             }
-            if (cfwd == p_size)
-                c++;
-            if (cbwd == p_size)
-                c++;
+            for (size_t i = 0U; i < (sizeof(count) / sizeof(count[0])); i++)
+                if (count[i] == p_size)
+                    c++;
         }
     }
 
     return c;
 }
 
-static int
-count_vertical(grid2d_t* g, const char* p)
-{
-    int c = 0;
-    size_t p_size = strlen(p);
-
-    for (size_t x = 0U; x < g->max_x; x++)
-    {
-        for (size_t y = 0U; y < g->max_y - p_size + 1U; y++)
-        {
-            size_t cfwd = 0U;
-            size_t cbwd = 0U;
-            for (size_t i = 0U; i < p_size; i++)
-            {
-                if (g->grid[y + i][x] == p[p_size - i - 1U])
-                    cfwd++;
-                if (g->grid[y + i][x] == p[i])
-                    cbwd++;
-            }
-            if (cfwd == p_size)
-                c++;
-            if (cbwd == p_size)
-                c++;
-        }
-    }
-
-    return c;
-}
 
 static int
-count_diagonal_backslash(grid2d_t* g, const char* p)
+count_x_mas(grid2d_t* g)
 {
     int c = 0;
-    size_t p_size = strlen(p);
 
-    for (size_t y = 0U; y < g->max_y - p_size + 1U; y++)
+    for (size_t y = 1U; y < g->max_y - 1U; y++)
     {
-        for (size_t x = 0U; x < g->max_x - p_size + 1U; x++)
+        for (size_t x = 1U; x < g->max_x - 1U; x++)
         {
-            size_t cfwd = 0U;
-            size_t cbwd = 0U;
-            for (size_t i = 0; i < p_size; i++)
-            {
-                if (g->grid[y + i][x + i] == p[p_size - i - 1U])
-                    cfwd++;
-                if (g->grid[y + i][x + i] == p[i])
-                    cbwd++;
-            }
-            if (cfwd == p_size)
-                c++;
-            if (cbwd == p_size)
-                c++;
-        }
-    }
+            if (   (g->grid[y][x] == 'A')
+                && (   (   (g->grid[y - 1U][x - 1U] == 'S')
+                        && (g->grid[y + 1U][x + 1U] == 'M'))
+                    || (   (g->grid[y - 1U][x - 1U] == 'M')
+                        && (g->grid[y + 1U][x + 1U] == 'S')))
 
-    return c;
-}
-
-static int
-count_diagonal_slash(grid2d_t* g, const char* p)
-{
-    int c = 0;
-    size_t p_size = strlen(p);
-
-    for (size_t y = 0U; y < g->max_y - p_size + 1U; y++)
-    {
-        for (size_t x = p_size - 1U; x < g->max_x; x++)
-        {
-            size_t cfwd = 0U;
-            size_t cbwd = 0U;
-            for (size_t i = 0U; i < p_size; i++)
-            {
-                if (g->grid[y + i][x - i] == p[p_size - i - 1])
-                    cfwd++;
-                if (g->grid[y + i][x - i] == p[i])
-                    cbwd++;
-            }
-            if (cfwd == p_size)
-                c++;
-            if (cbwd == p_size)
+                && (   (   (g->grid[y - 1U][x + 1U] == 'S')
+                        && (g->grid[y + 1U][x - 1U] == 'M'))
+                    || (   (g->grid[y - 1U][x + 1U] == 'M')
+                        && (g->grid[y + 1U][x - 1U] == 'S'))))
                 c++;
         }
     }
@@ -148,13 +110,11 @@ main(int argc, char** argv)
     printf("maxy %zu maxx %zu\n", g->max_y, g->max_x);
 #endif
 
-    const char* p = "XMAS";
-    int c = count_horizontal(g, p);        /* - */
-    c += count_vertical(g, p);             /* | */
-    c += count_diagonal_backslash(g, p);   /* \ */
-    c += count_diagonal_slash(g, p);       /* / */
+    int cp1 = count_xmas(g, "XMAS");
+    printf("Part 1: XMAS count = %d\n", cp1);
 
-    printf("Part 1: XMAS count = %d\n", c);
+    int cp2 = count_x_mas(g);
+    printf("Part 2: X-MAS count = %d\n", cp2);
 
     grid2d_free(g);
 
