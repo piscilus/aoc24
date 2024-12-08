@@ -17,6 +17,42 @@
 #include <stdlib.h>
 #include <string.h>
 
+int
+validate(int numbers[], size_t count)
+{
+    int check = 1;
+    int dir = 0;
+    for (size_t i = 1U; i < count; i++)
+    {
+        if (   (numbers[i - 1U] == numbers[i])
+            || (abs(numbers[i - 1U] - numbers[i]) > 3))
+        {
+            check = 0;
+            break;
+        }
+        if (dir == 0)
+        {
+            if (numbers[i - 1U] > numbers[i])
+                dir = -1;
+            else
+                dir = 1;
+        }
+        else
+        {
+            if (dir == -1 && numbers[i - 1U] < numbers[i])
+            {
+                check = 0;
+                break;
+            }
+            else if (dir == 1 && numbers[i - 1U] > numbers[i])
+            {
+                check = 0;
+                break;
+            }
+        }
+    }
+    return check;
+}
 
 int
 main(int argc, char** argv)
@@ -39,53 +75,54 @@ main(int argc, char** argv)
         exit(EXIT_FAILURE);
     }
 
-    int count = 0;
+    int result_p1 = 0;
+    int result_p2 = 0;
     const char* p;
     while ((p = flr_get_next_line(f, NULL)) != NULL)
     {
-        int result = 1;
-        int dir = 0;
-        int prev = INT_MIN, current;
-        char *token = strtok(p, " ");
+        size_t count = 0U;
+        int* numbers = malloc(strlen(p) * sizeof(int));
+        if (numbers == NULL)
+            break;
+        char* line = strdup(p);
+        assert(line != NULL);
+        char *token = strtok(line, " ");
         while(token)
         {
-            current = atoi(token);
+            numbers[count] = atoi(token);
             token = strtok(NULL, " ");
-            if (prev != INT_MIN)
-            {
-                if (prev == current || (abs(prev - current) > 3))
-                {
-                    result = 0;
-                    break;
-                }
-                if (dir == 0)
-                {
-                    if (prev > current)
-                        dir = -1;
-                    else
-                        dir = 1;
-                }
-                else
-                {
-                    if (dir == -1 && prev < current)
-                    {
-                        result = 0;
-                        break;
-                    }
-                    else if (dir == 1 && prev > current)
-                    {
-                        result = 0;
-                        break;
-                    }
-                }
-            }
-            prev = current;
-        }
-        if (result)
             count++;
+        }
+        assert(count > 1U);
+        if (validate(numbers, count))
+        {
+            result_p1++;
+        }
+        else
+        {
+            int* numbers_reduced = malloc((count - 1U) * sizeof(int));
+            assert(numbers_reduced != NULL);
+            for (size_t j = 0U; j < count; j++)
+            {
+                int n = 0;
+                for (size_t i = 0U; i < count; i++)
+                {
+                    if (i == j)
+                        continue;
+                    else
+                        numbers_reduced[n++] = numbers[i];
+                }
+                if (validate(numbers_reduced, count - 1U))
+                    result_p2++;
+            }
+            free(numbers_reduced);
+        }
+        free(line);
+        free(numbers);
     }
 
-    printf("Part 1: Number of safe reports = %d\n", count);
+    printf("Part 1: Number of safe reports = %d\n", result_p1);
+    printf("Part 2: Number of safe reports = %d\n", result_p2);
 
     flr_free(f);
 
