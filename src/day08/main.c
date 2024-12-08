@@ -18,6 +18,9 @@
 
 #define DEBUGP(...) /*printf(__VA_ARGS__)*/
 #define NUM_PER_FREQUENCY (10)
+#define MARKER_FREQUENCY  (1U << 0U)
+#define MARKER_PART1      (1U << 1U)
+#define MARKER_PART2      (1U << 2U)
 
 typedef struct
 {
@@ -25,16 +28,18 @@ typedef struct
     int y;
 } coord_t;
 
-static void
-place_antinode(grid2d_t* g, int y, int x)
+static int
+place_antinode(grid2d_t* g, int y, int x, size_t marker)
 {
     if (   (y >= 0)
         && (y < (int)g->max_y)
         && (x >= 0)
         && (x < (int)g->max_x))
     {
-        g->flags[y][x] |= 2U;
+        g->flags[y][x] |= marker;
+        return 1;
     }
+    return 0;
 }
 
 static void
@@ -48,7 +53,7 @@ handle_frequency(grid2d_t* g, size_t sy, size_t sx)
         {
             if (g->grid[y][x] == g->grid[sy][sx])
             {
-                g->flags[y][x] |= 1U;
+                g->flags[y][x] |= MARKER_FREQUENCY;
                 assert(count < NUM_PER_FREQUENCY);
                 coords[count].y = (int)y;
                 coords[count].x = (int)x;
@@ -63,8 +68,26 @@ handle_frequency(grid2d_t* g, size_t sy, size_t sx)
         {
             int dist_y = (coords[i].y - coords[j].y);
             int dist_x = (coords[i].x - coords[j].x);
-            place_antinode(g, coords[i].y + dist_y, coords[i].x + dist_x);
-            place_antinode(g, coords[j].y - dist_y, coords[j].x - dist_x);
+            place_antinode(g, coords[i].y + dist_y, coords[i].x + dist_x, MARKER_PART1);
+            place_antinode(g, coords[j].y - dist_y, coords[j].x - dist_x, MARKER_PART1);
+            int yy = coords[i].y;
+            int xx = coords[i].x;
+            g->flags[yy][xx] |= MARKER_PART2;
+            do
+            {
+                yy = yy + dist_y;
+                xx = xx + dist_x;
+            }
+            while (place_antinode(g, yy, xx, MARKER_PART2));
+            yy = coords[j].y;
+            xx = coords[j].x;
+            g->flags[yy][xx] |= MARKER_PART2;
+            do
+            {
+                yy = yy - dist_y;
+                xx = xx - dist_x;
+            }
+            while (place_antinode(g, yy, xx, MARKER_PART2));
         }
     }
 }
@@ -89,15 +112,23 @@ main(int argc, char** argv)
 
     for (size_t y = 0U; y < g->max_y; y++)
         for (size_t x = 0U; x < g->max_x; x++)
-            if ((g->grid[y][x] != '.') && ((g->flags[y][x] & 1U) == 0U))
+            if (   (g->grid[y][x] != '.')
+                && ((g->flags[y][x] & MARKER_FREQUENCY) == 0U))
                 handle_frequency(g, y, x);
 
-    int result = 0;
+    int result_p1 = 0;
+    int result_p2 = 0;
     for (size_t y = 0U; y < g->max_y; y++)
         for (size_t x = 0U; x < g->max_x; x++)
-            if ((g->flags[y][x] & 2) != 0)
-                result++;
-    printf("Part 1: Number of unique antinodes = %d\n", result);
+        {
+            if ((g->flags[y][x] & MARKER_PART1) != 0U)
+                result_p1++;
+            if ((g->flags[y][x] & MARKER_PART2) != 0U)
+                result_p2++;
+        }
+
+    printf("Part 1: Number of unique antinodes = %d\n", result_p1);
+    printf("Part 2: Number of unique antinodes = %d\n", result_p2);
     grid2d_free(g);
 
     return EXIT_SUCCESS;
