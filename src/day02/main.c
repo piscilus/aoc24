@@ -113,7 +113,10 @@ main(int argc, char** argv)
                         numbers_reduced[n++] = numbers[i];
                 }
                 if (validate(numbers_reduced, count - 1U))
+                {
                     result_p2++;
+                    break;
+                }
             }
             free(numbers_reduced);
         }
@@ -122,7 +125,7 @@ main(int argc, char** argv)
     }
 
     printf("Part 1: Number of safe reports = %d\n", result_p1);
-    printf("Part 2: Number of safe reports = %d\n", result_p2);
+    printf("Part 2: Number of safe reports = %d\n", result_p1 + result_p2);
 
     flr_free(f);
 
