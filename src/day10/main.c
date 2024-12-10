@@ -11,10 +11,7 @@
 #define PLIB_GRID2D_NO_NAMESPACE
 #include "plib_grid2d.h"
 
-#include <assert.h>
-#include <inttypes.h>
 #include <stdio.h>
-#include <stdint.h>
 #include <stdlib.h>
 
 static void
