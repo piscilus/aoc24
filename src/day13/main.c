@@ -1,5 +1,5 @@
 /*
- * Main program for advent of code 2024 day 12.
+ * Main program for advent of code 2024 day 13.
  *
  * (C) Copyright 2024 "piscilus" Julian Kraemer
  *
@@ -29,7 +29,7 @@ main(int argc, char** argv)
     size_t i = 0U;
     long x[3];
     long y[3];
-    long sum = 0;
+    long result = 0;
     const char* p;
     while((p = flr_get_next_line(f, NULL)) != NULL)
     {
@@ -60,7 +60,7 @@ main(int argc, char** argv)
                     long b = m / n;
                     long k = x[2] - b * x[1];
                     if ((k % x[0]) == 0)
-                        sum += k / x[0] * 3 + b;
+                        result += k / x[0] * 3 + b;
                 }
             }
             else
@@ -76,7 +76,7 @@ main(int argc, char** argv)
         }
     }
 
-    printf("Part 1: fewest tokens = %ld\n", sum);
+    printf("Part 1: fewest tokens = %ld\n", result);
 
     flr_free(f);
 
