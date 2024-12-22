@@ -16,8 +16,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define STEPS       (1024) /* example = (12) */
-#define TARGET_X    (70) /* example = (6) */
+#define EXAMPLE 0
+#if EXAMPLE
+#define STEPS       (12)
+#define TARGET_X    (6)
+#else
+#define STEPS       (1024)
+#define TARGET_X    (70)
+#endif
 #define TARGET_Y    TARGET_X
 #define GRID_SIZE_X (TARGET_X + 1)
 #define GRID_SIZE_Y (TARGET_Y + 1)
@@ -152,7 +158,19 @@ main(int argc, char** argv)
         grid[y][x] = 1;
         i++;
         if (i == STEPS)
-            break;
+        {
+            int result = shortest_path(grid, start, end);
+            printf("Part 1: minimum number of steps = %d\n", result);
+        }
+        else if (i > STEPS)
+        {
+            int result = shortest_path(grid, start, end);
+            if (result < 0)
+            {
+                printf("Part 2: unreachable after %d steps, pos = %d,%d\n", i, x, y);
+                break;
+            }
+        }
     }
 
 #if 0
@@ -165,11 +183,6 @@ main(int argc, char** argv)
         putchar('\n');
     }
 #endif
-
-    int result = shortest_path(grid, start, end);
-
-    printf("Part 1: minimum number of steps = %d\n", result);
-
 
     flr_free(f);
 
